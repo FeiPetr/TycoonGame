@@ -2,23 +2,44 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
     constructor() // The constructor (a special method for creating and initializing an object) uses
     {             // the "super" keyword to call the constructor of the super class
         super("playScene");
-        this.VEL = 150;
     }
 
     preload() {
       // load images/tile sprites
-        this.load.image('character', './assets/rocket.png');
         this.load.image('map', './assets/Test Map.png');
-        this.load.image('tower', './assets/tower_placeholder.png');
-        this.load.image('enemy', './assets/enemy_placeholder.png');
+        this.load.image('tower', './assets/tower_placeholder.png'); // Keep this
+        this.load.image('enemy', './assets/enemy_placeholder.png'); // Keep this
       }
       
     create(){
         // place map sprite
         this.starfield = this.add.tileSprite(0, 0, 1280, 1281, 'map').setOrigin(0, 0);
-        // add character (placeholder sprite)
-        this.character = this.physics.add.sprite(this.sys.game.config.width / 2 + 50, this.sys.game.config.height/2, 'character',0);
+        this.workers = this.physics.add.group({ key: 'enemy', frame: 0, repeat: 90, setXY: { x: 100000, y: 100000,stepY: 40} });
 
+        this.workerCost = 10; // initialize worker cost
+        this.workerSell = 5; // initialize sell price of worker
+
+        this.workersOnBoard = 0; // workers on screen
+
+        this.buyButton = this.add.text(100, 100, 'Buy Worker for ' + this.workerCost, { fill: '#0f0' });
+        this.workerNumText = this.add.text(100, 150, '# Workers: ' + this.workersOnBoard, { fill: '#0f0' });
+
+        this.sellButton = this.add.text(350, 100, 'Sacrifice Worker for ' + this.workerSell, { fill: '#EE4B2B' });
+        this.buyButton.setInteractive();
+        this.sellButton.setInteractive(); // make buttons interactive
+        this.buyButton.on('pointerdown', () => this.spawnEnemy(this.workers,Phaser.Math.Between(40, 1200),Phaser.Math.Between(40, 1200))); // has to be in create or it keeps stacking
+        this.sellButton.on('pointerdown', () => { console.log('pointerover'); });
+        this.sellButton.on('pointerdown', () => this.sellAction(this.workers)); // has to be in create or it keeps stacking
+
+        this.explosionLvl = "Low";
+        this.rebelLvl = "Low";
+
+        this.dangerExplode = this.add.text(100, 1100, 'Explosion Danger Level: ' + this.explosionLvl, { fill: '#FFFFFF' });
+        this.dangerRebel = this.add.text(500, 1100, 'Rebellion Danger Level: ' + this.rebelLvl, { fill: '#FFFFFF' });
+        keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+
+
+      // note: maybe the explosion happens if there hasn't been a worker bought or sold in long enough?
 
         //animate character (replace this once I do the sprites)
 
@@ -30,31 +51,17 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         });
         this.character.anims.play('cat');*/
 
-		    this.tower = this.physics.add.staticSprite(this.sys.game.config.width / 2, this.sys.game.config.height/2, 'tower',0);
-        this.towerHP = 500; // set an HP amount for crystal tower; when the enemies attack it, this will go down
+        this.money = 100000;
+        this.moneyText = this.add.text(650, 100, "Money: " + Math.floor(this.money), { fill: '#0f0' });
 
-        // Add an HP bar at some point? Currently not sure how to code that
-        // HP bar here. figure it out later.
-
-        // Add colliders
-        this.physics.add.collider(this.character,this.tower);
-        //this.physics.add.collider(this.enemyGroup,this.tower); // enemy and character collide with towers (but not each other currently)
-        this.character.body.setCollideWorldBounds(true);
-
-        // add clock. Currently not in use but maybe we'll need it later.
+        // add clock
         this.clock = this.time.delayedCall(600000000, this.onClockEvent, null, this); 
-
-
-        // define keys
-        this.cursors = this.input.keyboard.createCursorKeys()
 
         // GAME OVER flag
         this.gameOver = false;
 
-        // Wave beat flag
-        this.waveBeat = true;
+        //this.enemyNum = 5; // Start out with 5 enemies per wave, maybe increase as waves go on?
 
-        this.enemyNum = 5; // Start out with 5 enemies per wave, maybe increase as waves go on?
                 
 
 
@@ -62,68 +69,97 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
      update() {
         
         this.elapsed = parseInt(this.clock.getElapsedSeconds()); // how much time has passed.
+        this.moneyText.text =  "Money: " + Math.floor(this.money);
+        this.buyButton.text = "Buy Worker for " + this.workerCost;
+        this.sellButton.text = "Sacrifice Worker for " + this.workerSell;
+        this.workerNumText.text = '# Workers: ' + this.workersOnBoard;
+        this.dangerExplode.text ='Explosion Danger Level: ' + this.explosionLvl;
+        this.dangerRebel.text = 'Rebellion Danger Level: ' + this.rebelLvl;
 
-        this.direction = new Phaser.Math.Vector2(0);
-
-        if(this.cursors.left.isDown)
+        if(this.workersOnBoard <= 40)
         {
-            this.direction.x = -1;
+          this.explosionLvl = "Low";
         }
-        else if (this.cursors.right.isDown)
+        else if (this.workersOnBoard <= 70)
         {
-            this.direction.x = 1;
+          this.explosionLvl = "Medium";
         }
-
-        if (this.cursors.up.isDown)
+        else
         {
-            this.direction.y = -1;
+          this.explosionLvl = "High";
         }
-        else if (this.cursors.down.isDown)
+        if(this.workersOnBoard > 90)
         {
-            this.direction.y = 1;
+          this.gameOver = true;
         }
-        this.direction.normalize();
-        this.character.setVelocity(this.VEL*this.direction.x,this.VEL*this.direction.y);
-
-
-        if(this.waveBeat == true) // if you beat a wave, a new one starts (maybe add a timer between waves-- not currently important)
+        if(this.gameOver)
         {
-          console.log("wave triggered\n"); // debug statement
-          this.waveBeat = false; // set wave beat to false before it starts spawning enemies so they don't spawn infinitely
-          // Add ten enemies, staggered by 40 pixels. Maybe we can change the amount of enemies according to waves.
-          this.enemyGroupRight1 = this.physics.add.group({ key: 'enemy', frame: 0, repeat: this.enemyNum, setXY: { x: this.sys.game.config.width, y: this.sys.game.config.height/2+300, stepX: 40 } });        
-          this.enemyGroupRight2 = this.physics.add.group({ key: 'enemy', frame: 0, repeat: this.enemyNum, setXY: { x: this.sys.game.config.width, y: this.sys.game.config.height/2-300, stepX: 40 } });        
-          this.enemyGroupTop1 = this.physics.add.group({ key: 'enemy', frame: 0, repeat: this.enemyNum, setXY: { x: this.sys.game.config.width/2+300, y: 0, stepY: 40 } });        
-          this.enemyGroupTop2 = this.physics.add.group({ key: 'enemy', frame: 0, repeat: this.enemyNum, setXY: { x: this.sys.game.config.width/2-300, y: 0, stepY: 40 } });        
-          this.enemyGroupBottom1 = this.physics.add.group({ key: 'enemy', frame: 0, repeat: this.enemyNum, setXY: { x: this.sys.game.config.width/2+300, y: this.sys.game.config.height, stepY: 40 } });        
-          this.enemyGroupBottom2 = this.physics.add.group({ key: 'enemy', frame: 0, repeat: this.enemyNum, setXY: { x: this.sys.game.config.width/2-350, y: this.sys.game.config.height, stepY: 40 } });        
-          this.enemyGroupLeft1 = this.physics.add.group({ key: 'enemy', frame: 0, repeat: this.enemyNum, setXY: { x: 0, y: this.sys.game.config.height/2+300, stepX: 40 } });        
-          this.enemyGroupLeft2 = this.physics.add.group({ key: 'enemy', frame: 0, repeat: this.enemyNum, setXY: { x: 0, y: this.sys.game.config.height/2-300, stepX: 40 } });        
+          this.gameOverTxt = this.add.text(500, 500, "Game OVER!!", { fill: '#0f0' });
+          this.money = 0;
+        }
+        if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
+          this.scene.restart();
+
         }
 
-        this.spawnEnemy(this.enemyGroupRight1,this.VEL*-0.5,0);
-        this.spawnEnemy(this.enemyGroupRight2,this.VEL*-0.5,0);
-        this.spawnEnemy(this.enemyGroupTop1,0,this.VEL*0.5);
-        this.spawnEnemy(this.enemyGroupTop2,0,this.VEL*0.5);
-        this.spawnEnemy(this.enemyGroupBottom1,0,this.VEL*-0.5);
-        this.spawnEnemy(this.enemyGroupBottom2,0,this.VEL*-0.5);
-        this.spawnEnemy(this.enemyGroupLeft1,this.VEL*0.5,0);
-        this.spawnEnemy(this.enemyGroupLeft2,this.VEL*0.5,0);
 
-        // currently no way to progress past the first wave
-        
+        // for every member of the group
+        for(var i = 0; i < this.workers.getLength();i++)
+        {
+          //console.log(this.workers.getChildren()[i].y);
+          if(this.workers.getChildren()[i].y <= 1200 && this.workers.getChildren()[i].x <= 1200) // figure out how to stop using hardcoded magic numbers dude
+          {
+              this.money+=0.02;
+              //console.log(Math.floor(this.money));
+          }
+        }
+          // if the enemy is on the map
+            // generate money every five seconds
 
       }
 
+
       // Spawns enemy group; Input the velocity
-      spawnEnemy(group,velX,velY){
-        this.getEnemy = Phaser.Utils.Array.RemoveRandomElement(group.getChildren());
-        
-        if(this.getEnemy)
+      spawnEnemy(group,x,y){
+
+        for(var i = 0; i < this.workers.getLength();i++)
+        {
+          //OHHH SPAWN EBEMY IS DELETING THE THING FROM THE ARRAY
+          //console.log(this.workers.getChildren()[i].y);
+          if(group.getChildren()[i].y >= 1200 && group.getChildren()[i].x >= 1200 && this.money >= this.workerCost) // figure out how to stop using hardcoded magic numbers dude
           {
-            this.physics.add.collider(this.getEnemy,this.tower);
-            this.getEnemy.setVelocity(velX,velY); // Move enemy across the screen. I'm not sure how to program the pathing.
+            group.getChildren()[i].y = y;
+            group.getChildren()[i].x = x;
+            this.money-=this.workerCost;
+            this.workersOnBoard += 1;
+            this.workerCost+=10;
+            this.workerSell+=5; //find a formula for these later maybe, i want it to scale
+            break;
           }
+        }
+
+
+        //this.getEnemy = Phaser.Utils.Array.RemoveRandomElement(group.getChildren());
+        //this.getEnemy.y = y;
+        //console.log(this.getEnemy.y);
+        //this.getEnemy.x = x;
+      }
+      sellAction(group)
+      {
+        
+        for(var i = 0; i < this.workers.getLength();i++)
+        {
+          //OHHH SPAWN EBEMY IS DELETING THE THING FROM THE ARRAY
+          //console.log(this.workers.getChildren()[i].y);
+          if(group.getChildren()[i].y <= 1200 && group.getChildren()[i].x <= 1200) // figure out how to stop using hardcoded magic numbers dude
+          {
+            group.getChildren()[i].y = 10000;
+            group.getChildren()[i].x = 10000;
+            break;
+          }
+        }
+        this.money+= this.workerSell;
+        this.workersOnBoard -= 1;
 
       }
       
