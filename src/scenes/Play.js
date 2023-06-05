@@ -6,7 +6,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
     preload() {
       // load images/tile sprites
-        this.load.image('map', './assets/Test Map.png');
+        this.load.image('map', './assets/metro_back.png');
         this.load.image('tower', './assets/tower_placeholder.png'); // Keep this
         this.load.image('enemy', './assets/enemy_placeholder.png'); // Keep this
       }
@@ -51,24 +51,23 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         });
         this.character.anims.play('cat');*/
 
-        this.money = 100000;
+        this.money = 100;
         this.moneyText = this.add.text(650, 100, "Money: " + Math.floor(this.money), { fill: '#0f0' });
 
         // add clock
-        this.clock = this.time.delayedCall(600000000, this.onClockEvent, null, this); 
+        this.clock = this.time.delayedCall(60000, this.onClockEvent, null, this); 
 
         // GAME OVER flag
         this.gameOver = false;
 
         //this.enemyNum = 5; // Start out with 5 enemies per wave, maybe increase as waves go on?
 
-                
-
+              
 
      }
      update() {
         
-        this.elapsed = parseInt(this.clock.getElapsedSeconds()); // how much time has passed.
+        this.elapsed = parseInt(this.clock.getRemainingSeconds()); // how much time has passed.
         this.moneyText.text =  "Money: " + Math.floor(this.money);
         this.buyButton.text = "Buy Worker for " + this.workerCost;
         this.sellButton.text = "Sacrifice Worker for " + this.workerSell;
@@ -88,7 +87,22 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         {
           this.explosionLvl = "High";
         }
-        if(this.workersOnBoard > 90)
+
+        if(this.elapsed > 45)
+        {
+          this.rebelLvl = "Low";
+        }
+        else if (this.elapsed <= 45 && this.elapsed >= 20)
+        {
+          this.rebelLvl = "Medium";
+        }
+        else
+        {
+          this.rebelLvl = "High";
+        }
+
+
+        if(this.workersOnBoard > 90 || this.elapsed <= 0)
         {
           this.gameOver = true;
         }
@@ -126,6 +140,10 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         {
           //OHHH SPAWN EBEMY IS DELETING THE THING FROM THE ARRAY
           //console.log(this.workers.getChildren()[i].y);
+          this.clock.reset({
+            delay: 60000                // ms
+        })
+
           if(group.getChildren()[i].y >= 1200 && group.getChildren()[i].x >= 1200 && this.money >= this.workerCost) // figure out how to stop using hardcoded magic numbers dude
           {
             group.getChildren()[i].y = y;
@@ -146,6 +164,10 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
       }
       sellAction(group)
       {
+
+        this.clock.reset({
+          delay: 60000                // ms
+      })
         
         for(var i = 0; i < this.workers.getLength();i++)
         {
