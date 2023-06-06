@@ -1,3 +1,10 @@
+/* KNOWN BUGS
+
+-you can infinitely sacrifice workers for money, the # workers will just go into negative
+
+*/
+
+
 class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser's predef scene object
     constructor() // The constructor (a special method for creating and initializing an object) uses
     {             // the "super" keyword to call the constructor of the super class
@@ -19,6 +26,14 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         this.workerCost = 10; // initialize worker cost
         this.workerSell = 5; // initialize sell price of worker
 
+        this.prodRate = 0;
+        this.towerMultiplier = 1; // Tower multiplier
+        this.multiplierNeeded = 10; // Workers needed to sacrifice for multiplier to take effect
+        this.multiplierProgress = 0; // Current amount of multiplier needed
+        this.multiplierText = this.add.text(800, 100, 'Tower Multiplier: ' + this.explosionLvl, { fill: '#FFFFFF' });
+        this.prodRateText = this.add.text(800, 250, 'Production Rate: ' + this.prodRate, { fill: '#FFFFFF' });
+
+
         this.workersOnBoard = 0; // workers on screen
 
         this.buyButton = this.add.text(100, 100, 'Buy Worker for ' + this.workerCost, { fill: '#0f0' });
@@ -28,7 +43,6 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         this.buyButton.setInteractive();
         this.sellButton.setInteractive(); // make buttons interactive
         this.buyButton.on('pointerdown', () => this.spawnEnemy(this.workers,Phaser.Math.Between(40, 1200),Phaser.Math.Between(40, 1200))); // has to be in create or it keeps stacking
-        this.sellButton.on('pointerdown', () => { console.log('pointerover'); });
         this.sellButton.on('pointerdown', () => this.sellAction(this.workers)); // has to be in create or it keeps stacking
 
         this.explosionLvl = "Low";
@@ -74,8 +88,11 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         this.workerNumText.text = '# Workers: ' + this.workersOnBoard;
         this.dangerExplode.text ='Explosion Danger Level: ' + this.explosionLvl;
         this.dangerRebel.text = 'Rebellion Danger Level: ' + this.rebelLvl;
+        this.multiplierText.text = 'Tower Multiplier: ' + this.towerMultiplier;
+        this.prodRateText.text = 'Production Rate: ' + this.prodRate;
+        
 
-        if(this.workersOnBoard <= 40)
+        if(this.workersOnBoard <= 40) // Handling Explosion Levels
         {
           this.explosionLvl = "Low";
         }
@@ -88,7 +105,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
           this.explosionLvl = "High";
         }
 
-        if(this.elapsed > 45)
+        if(this.elapsed > 45) // Handling rebellion levels
         {
           this.rebelLvl = "Low";
         }
@@ -102,7 +119,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         }
 
 
-        if(this.workersOnBoard > 90 || this.elapsed <= 0)
+        if(this.workersOnBoard > 90 || this.elapsed <= 0) // Handling Game over
         {
           this.gameOver = true;
         }
@@ -116,17 +133,27 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
         }
 
+        if(this.multiplierProgress >= this.multiplierNeeded) // Handling Tower multiplier
+        {
+          this.multiplierProgress = 0; // Reset progress
+          this.towerMultiplier += 0.5; // Increase the tower multiplier
+          this.multiplierNeeded += 5; // Up the next level needed
+        }
+
 
         // for every member of the group
+        this.onScreen = 0; // workersOnScreen
         for(var i = 0; i < this.workers.getLength();i++)
         {
           //console.log(this.workers.getChildren()[i].y);
           if(this.workers.getChildren()[i].y <= 1200 && this.workers.getChildren()[i].x <= 1200) // figure out how to stop using hardcoded magic numbers dude
           {
-              this.money+=0.02;
+              this.onScreen += 1;
+              this.money+=0.02 * this.towerMultiplier;
               //console.log(Math.floor(this.money));
           }
         }
+        this.prodRate = this.towerMultiplier*this.onScreen;
           // if the enemy is on the map
             // generate money every five seconds
 
@@ -180,6 +207,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
             break;
           }
         }
+        this.multiplierProgress += 1; // Increase sacrifice for multiplier
         this.money+= this.workerSell;
         this.workersOnBoard -= 1;
 
