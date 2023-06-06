@@ -1,6 +1,5 @@
 /* KNOWN BUGS
 
--you can infinitely sacrifice workers for money, the # workers will just go into negative
 
 */
 
@@ -31,7 +30,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         this.multiplierNeeded = 10; // Workers needed to sacrifice for multiplier to take effect
         this.multiplierProgress = 0; // Current amount of multiplier needed
         this.multiplierText = this.add.text(800, 100, 'Tower Multiplier: ' + this.explosionLvl, { fill: '#FFFFFF' });
-        this.prodRateText = this.add.text(800, 250, 'Production Rate: ' + this.prodRate, { fill: '#FFFFFF' });
+        this.prodRateText = this.add.text(800, 150, 'Production Rate: ' + this.prodRate + ' dollars per second', { fill: '#FFFFFF' });
 
 
         this.workersOnBoard = 0; // workers on screen
@@ -89,7 +88,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         this.dangerExplode.text ='Explosion Danger Level: ' + this.explosionLvl;
         this.dangerRebel.text = 'Rebellion Danger Level: ' + this.rebelLvl;
         this.multiplierText.text = 'Tower Multiplier: ' + this.towerMultiplier;
-        this.prodRateText.text = 'Production Rate: ' + this.prodRate;
+        this.prodRateText.text = 'Production Rate: ' + this.prodRate + ' dollars per second';
         
 
         if(this.workersOnBoard <= 40) // Handling Explosion Levels
@@ -142,7 +141,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
 
         // for every member of the group
-        this.onScreen = 0; // workersOnScreen
+        this.onScreen = 0; // workersOnScreen. is there a difference between this and this.workersonboard or did I mess up?
         for(var i = 0; i < this.workers.getLength();i++)
         {
           //console.log(this.workers.getChildren()[i].y);
@@ -200,7 +199,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         {
           //OHHH SPAWN EBEMY IS DELETING THE THING FROM THE ARRAY
           //console.log(this.workers.getChildren()[i].y);
-          if(group.getChildren()[i].y <= 1200 && group.getChildren()[i].x <= 1200) // figure out how to stop using hardcoded magic numbers dude
+          if(group.getChildren()[i].y <= 1200 && group.getChildren()[i].x <= 1200 && this.this.workersOnBoard >= 0) // figure out how to stop using hardcoded magic numbers dude
           {
             group.getChildren()[i].y = 10000;
             group.getChildren()[i].x = 10000;
