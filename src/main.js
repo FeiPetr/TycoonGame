@@ -1,6 +1,5 @@
 /*
-Thesis Defense
-Hours:
+Hours: 
 
 */
 

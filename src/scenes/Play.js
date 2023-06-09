@@ -1,5 +1,6 @@
 /* KNOWN BUGS
-
+can sacrifice workers infinitely
+lag, potentially caused by the canvas text. maybe replace with bitmap if i have time
 
 */
 
@@ -49,6 +50,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
         this.dangerExplode = this.add.text(100, 1100, 'Explosion Danger Level: ' + this.explosionLvl, { fill: '#FFFFFF' });
         this.dangerRebel = this.add.text(500, 1100, 'Rebellion Danger Level: ' + this.rebelLvl, { fill: '#FFFFFF' });
+
         keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
 
@@ -141,18 +143,18 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
 
         // for every member of the group
-        this.onScreen = 0; // workersOnScreen. is there a difference between this and this.workersonboard or did I mess up?
+        this.onScreen = 0;
         for(var i = 0; i < this.workers.getLength();i++)
         {
           //console.log(this.workers.getChildren()[i].y);
-          if(this.workers.getChildren()[i].y <= 1200 && this.workers.getChildren()[i].x <= 1200) // figure out how to stop using hardcoded magic numbers dude
+          if(this.workers.getChildren()[i].y <= 1200 && this.workers.getChildren()[i].x <= 1200) // figure out how to stop using hardcoded magic numbers
           {
-              this.onScreen += 1;
               this.money+=0.02 * this.towerMultiplier;
               //console.log(Math.floor(this.money));
+              this.onScreen+=1;
           }
         }
-        this.prodRate = this.towerMultiplier*this.onScreen;
+        this.prodRate = this.towerMultiplier*this.onScreen; //calculating production rate
           // if the enemy is on the map
             // generate money every five seconds
 
@@ -199,8 +201,8 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         {
           //OHHH SPAWN EBEMY IS DELETING THE THING FROM THE ARRAY
           //console.log(this.workers.getChildren()[i].y);
-          if(group.getChildren()[i].y <= 1200 && group.getChildren()[i].x <= 1200 && this.this.workersOnBoard >= 0) // figure out how to stop using hardcoded magic numbers dude
-          {
+          if(group.getChildren()[i].y <= 1200 && group.getChildren()[i].x <= 1200) // figure out how to stop using hardcoded magic numbers dude
+          { //&& this.workersOnBoard > 0
             group.getChildren()[i].y = 10000;
             group.getChildren()[i].x = 10000;
             break;
