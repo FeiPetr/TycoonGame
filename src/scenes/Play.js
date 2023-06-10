@@ -14,8 +14,8 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
     preload() {
       // load images/tile sprites
         this.load.image('map', './assets/metro_back.png');
-        this.load.image('tower', './assets/tower_placeholder.png'); // Keep this
-        this.load.image('enemy', './assets/enemy_placeholder.png'); // Keep this
+        this.load.image('tower', './assets/tower.PNG'); // Keep this
+        this.load.image('enemy', './assets/worker.PNG'); // Keep this
       }
       
     create(){

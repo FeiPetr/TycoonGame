@@ -7,12 +7,8 @@ class Menu extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
     preload() {
         // load audio
         this.load.audio('sfx_select', './assets/blip_select12.wav');
-        this.load.audio('sfx_explosion', './assets/explosion38.wav');
-        this.load.audio('sfx_explosion4', './assets/exploson4.ogg');
-
-        this.load.audio('sfx_rocket', './assets/rocket_shot.wav');
         this.load.audio('bgm', './assets/scifi.mp3');
-        this.load.image('menuscreen', './assets/rocketpatrolmenu.png');
+        this.load.image('menuscreen', './assets/metromenu.png');
         // replace all this but it's not high priority
     }
       
@@ -47,10 +43,12 @@ class Menu extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT);
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT);
         keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+        keySPACE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
     }
 
     update() {
-        if (Phaser.Input.Keyboard.JustDown(keyR)) {
+        if (Phaser.Input.Keyboard.JustDown(keySPACE)) {
           this.scene.start("playScene");
         }
       }
