@@ -23,8 +23,11 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         this.starfield = this.add.tileSprite(0, 0, 1280, 1281, 'map').setOrigin(0, 0);
         this.workers = this.physics.add.group({ key: 'enemy', frame: 0, repeat: 90, setXY: { x: 100000, y: 100000,stepY: 40} });
 
+
         this.workerCost = 10; // initialize worker cost
         this.workerSell = 5; // initialize sell price of worker
+
+        this.tower = this.add.sprite(this.sys.game.config.width / 2, this.sys.game.config.height/2, 'tower');
 
         this.prodRate = 0;
         this.towerMultiplier = 1; // Tower multiplier
@@ -91,6 +94,9 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         this.dangerRebel.text = 'Rebellion Danger Level: ' + this.rebelLvl;
         this.multiplierText.text = 'Tower Multiplier: ' + this.towerMultiplier;
         this.prodRateText.text = 'Production Rate: ' + this.prodRate + ' dollars per second';
+
+        this.tower.x = this.sys.game.config.width / 2; // trying to get tower to appear on screeen
+        this.tower.y = this.sys.game.config.height / 2;
         
 
         if(this.workersOnBoard <= 40) // Handling Explosion Levels
