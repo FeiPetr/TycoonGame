@@ -19,6 +19,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
       }
       
     create(){
+
         // place map sprite
         this.starfield = this.add.tileSprite(0, 0, 1280, 1281, 'map').setOrigin(0, 0);
         this.workers = this.physics.add.group({ key: 'enemy', frame: 0, repeat: 90, setXY: { x: 100000, y: 100000,stepY: 40} });
@@ -38,11 +39,11 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
 
         this.workersOnBoard = 0; // workers on screen
+        console.log("Test to make sure it's updating 2"); // debugging statement
 
-        this.buyButton = this.add.text(100, 100, 'Buy Worker for ' + this.workerCost, { fill: '#0f0' });
+        this.buyButton = this.add.text(100, 100, 'Buy Worker for ' + this.workerCost,{ fill: '#0f0' });
         this.workerNumText = this.add.text(100, 150, '# Workers: ' + this.workersOnBoard, { fill: '#0f0' });
-
-        this.sellButton = this.add.text(350, 100, 'Sacrifice Worker for ' + this.workerSell, { fill: '#EE4B2B' });
+        this.sellButton = this.add.text(350, 100, 'Sacrifice Worker for ' + this.workerSell, {buttonConfig, fill: '#ff001d' });
         this.buyButton.setInteractive();
         this.sellButton.setInteractive(); // make buttons interactive
         this.buyButton.on('pointerdown', () => this.spawnEnemy(this.workers,Phaser.Math.Between(40, 1200),Phaser.Math.Between(40, 1200))); // has to be in create or it keeps stacking
