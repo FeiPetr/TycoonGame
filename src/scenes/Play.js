@@ -21,6 +21,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
       
     create(){
 
+
         // place map sprite
         this.starfield = this.add.tileSprite(0, 0, 1280, 1281, 'map').setOrigin(0, 0);
         this.workers = this.physics.add.group({ key: 'enemy', frame: 0, repeat: 90, setXY: { x: 100000, y: 100000,stepY: 40} });
@@ -33,14 +34,13 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
         this.prodRate = 0;
         this.towerMultiplier = 1; // Tower multiplier
-        this.multiplierNeeded = 10; // Workers needed to sacrifice for multiplier to take effect
+        this.multiplierNeeded = 5; // Workers needed to sacrifice for multiplier to take effect
         this.multiplierProgress = 0; // Current amount of multiplier needed
         this.multiplierText = this.add.text(800, 100, 'Tower Multiplier: ' + this.explosionLvl, { fill: '#FFFFFF' });
         this.prodRateText = this.add.text(800, 150, 'Production Rate: ' + this.prodRate + ' dollars per second', { fill: '#FFFFFF' });
 
 
         this.workersOnBoard = 0; // workers on screen
-        console.log("Test to make sure it's updating 2"); // debugging statement
 
         this.buyButton = this.add.text(100, 100, 'Buy Worker for ' + this.workerCost,{ fill: '#0f0' });
         this.workerNumText = this.add.text(100, 150, '# Workers: ' + this.workersOnBoard, { fill: '#0f0' });
@@ -58,8 +58,6 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
         keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
-
-      // note: maybe the explosion happens if there hasn't been a worker bought or sold in long enough?
 
         //animate character (replace this once I do the sprites)
 
@@ -80,7 +78,9 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         // GAME OVER flag
         this.gameOver = false;
 
-        //this.enemyNum = 5; // Start out with 5 enemies per wave, maybe increase as waves go on?
+        // WIN flag
+        this.win = false;
+        this.workersSacrificed = 0; // Keeping track of workers sacrificed for win condition
 
         this.explosionImg = this.add.image(0, 0, 'explode').setOrigin(0);
         this.alpha = 0; // alpha gradually gets deeper as 
@@ -90,6 +90,10 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
      }
 
      update() {
+
+      if (Phaser.Input.Keyboard.JustDown(keyP)) { // Pause menu
+        this.scene.start("pauseScene");
+      }
         
         this.elapsed = parseInt(this.clock.getRemainingSeconds()); // how much time has passed.
         this.moneyText.text =  "Money: " + Math.floor(this.money);
@@ -107,16 +111,16 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         this.explosionImg.setAlpha(this.alpha);
         
 
-        if(this.workersOnBoard <= 40) // Handling Explosion Levels
+        if(this.workersOnBoard <= 10) // Handling Explosion Levels
         {
           this.explosionLvl = "Low";
           if(this.rebelLvl != "High")
           {
-            this.alpha = 0;
+            this.alpha = 0; // Resetting warning graphics
           }
           
         }
-        else if (this.workersOnBoard <= 70)
+        else if (this.workersOnBoard <= 20)
         {
           this.explosionLvl = "Medium";
         }
@@ -145,7 +149,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         }
 
 
-        if(this.workersOnBoard > 90 || this.elapsed <= 0) // Handling Game over
+        if(this.workersOnBoard > 30 || this.elapsed <= 0) // Handling Game over
         {
           this.gameOver = true;
         }
@@ -156,8 +160,22 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
           this.money = 0;
         }
-        if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
+        if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyR) || this.win && Phaser.Input.Keyboard.JustDown(keyR)) {
           this.scene.restart();
+
+        }
+
+        if(this.workersSacrificed == 20)
+        {
+          this.win = true;
+        }
+
+        if(this.win) // Handling win condition
+        {
+          this.gameOverTxt = this.add.text(this.sys.game.config.width / 2 - 50, this.sys.game.config.height / 2, "You Win !", { fill: '#0f0' });
+          this.gameOverTxt = this.add.text(this.sys.game.config.width / 2 - 50, this.sys.game.config.height / 2 + 50, "Press R to restart", { fill: '#FFFFFF' });
+
+          this.money = 0;
 
         }
 
@@ -239,6 +257,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         }
         
           this.multiplierProgress += 1; // Increase sacrifice for multiplier
+          this.workersSacrificed += 1;
           this.money+= this.workerSell;
           this.workersOnBoard -= 1;
       }
