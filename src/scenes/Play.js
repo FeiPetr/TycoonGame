@@ -14,8 +14,9 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
     preload() {
       // load images/tile sprites
         this.load.image('map', './assets/metro_back.png');
-        this.load.image('tower', './assets/tower.PNG'); // Keep this
-        this.load.image('enemy', './assets/worker.PNG'); // Keep this
+        this.load.image('tower', './assets/tower.PNG'); // tower
+        this.load.image('enemy', './assets/worker.PNG'); // worker
+        this.load.image('explode', './assets/explode.png');
       }
       
     create(){
@@ -43,7 +44,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
         this.buyButton = this.add.text(100, 100, 'Buy Worker for ' + this.workerCost,{ fill: '#0f0' });
         this.workerNumText = this.add.text(100, 150, '# Workers: ' + this.workersOnBoard, { fill: '#0f0' });
-        this.sellButton = this.add.text(350, 100, 'Sacrifice Worker for ' + this.workerSell, {buttonConfig, fill: '#ff001d' });
+        this.sellButton = this.add.text(350, 100, 'Sacrifice Worker for ' + this.workerSell, {fill: '#ff001d' });
         this.buyButton.setInteractive();
         this.sellButton.setInteractive(); // make buttons interactive
         this.buyButton.on('pointerdown', () => this.spawnEnemy(this.workers,Phaser.Math.Between(40, 1200),Phaser.Math.Between(40, 1200))); // has to be in create or it keeps stacking
@@ -81,9 +82,13 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
         //this.enemyNum = 5; // Start out with 5 enemies per wave, maybe increase as waves go on?
 
-              
+        this.explosionImg = this.add.image(0, 0, 'explode').setOrigin(0);
+        this.alpha = 0; // alpha gradually gets deeper as 
+        this.explosionImg.setAlpha(this.alpha);
+        
 
      }
+
      update() {
         
         this.elapsed = parseInt(this.clock.getRemainingSeconds()); // how much time has passed.
@@ -98,11 +103,18 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
         this.tower.x = this.sys.game.config.width / 2; // trying to get tower to appear on screeen
         this.tower.y = this.sys.game.config.height / 2;
+
+        this.explosionImg.setAlpha(this.alpha);
         
 
         if(this.workersOnBoard <= 40) // Handling Explosion Levels
         {
           this.explosionLvl = "Low";
+          if(this.rebelLvl != "High")
+          {
+            this.alpha = 0;
+          }
+          
         }
         else if (this.workersOnBoard <= 70)
         {
@@ -111,11 +123,16 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         else
         {
           this.explosionLvl = "High";
+          this.alpha += 0.001; //if danger is high, overlay red
         }
 
         if(this.elapsed > 45) // Handling rebellion levels
         {
           this.rebelLvl = "Low";
+          if(this.explosionLvl != "High")
+          {
+            this.alpha = 0;
+          }
         }
         else if (this.elapsed <= 45 && this.elapsed >= 20)
         {
@@ -124,6 +141,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         else
         {
           this.rebelLvl = "High";
+          this.alpha += 0.001;
         }
 
 
@@ -133,7 +151,9 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         }
         if(this.gameOver)
         {
-          this.gameOverTxt = this.add.text(500, 500, "Game OVER!!", { fill: '#0f0' });
+          this.gameOverTxt = this.add.text(this.sys.game.config.width / 2 - 50, this.sys.game.config.height / 2, "Game Over", { fill: '#0f0' });
+          this.gameOverTxt = this.add.text(this.sys.game.config.width / 2 - 50, this.sys.game.config.height / 2 + 50, "Press R to restart", { fill: '#FFFFFF' });
+
           this.money = 0;
         }
         if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyR)) {
@@ -197,8 +217,10 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         //console.log(this.getEnemy.y);
         //this.getEnemy.x = x;
       }
+
       sellAction(group)
       {
+        if(this.workersOnBoard > 0){
 
         this.clock.reset({
           delay: 60000                // ms
@@ -208,16 +230,19 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         {
           //OHHH SPAWN EBEMY IS DELETING THE THING FROM THE ARRAY
           //console.log(this.workers.getChildren()[i].y);
-          if(group.getChildren()[i].y <= 1200 && group.getChildren()[i].x <= 1200) // figure out how to stop using hardcoded magic numbers dude
+          if(group.getChildren()[i].y <= 1200 && group.getChildren()[i].x <= 1200 ) // figure out how to stop using hardcoded magic numbers
           { //&& this.workersOnBoard > 0
             group.getChildren()[i].y = 10000;
             group.getChildren()[i].x = 10000;
             break;
           }
         }
-        this.multiplierProgress += 1; // Increase sacrifice for multiplier
-        this.money+= this.workerSell;
-        this.workersOnBoard -= 1;
+        
+          this.multiplierProgress += 1; // Increase sacrifice for multiplier
+          this.money+= this.workerSell;
+          this.workersOnBoard -= 1;
+      }
+        
 
       }
       
