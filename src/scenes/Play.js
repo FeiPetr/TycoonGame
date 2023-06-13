@@ -1,6 +1,7 @@
 /* KNOWN BUGS
-can sacrifice workers infinitely
-lag, potentially caused by the canvas text. maybe replace with bitmap if i have time
+- Lag as time goes on, potentially caused by the canvas text
+- Pause menu can only be triggered once. This is an issue I have also seen in phaser's own pause/resume sample code, and with other students. 
+I can only assume it's a phaser bug.
 
 */
 
@@ -13,24 +14,33 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
     preload() {
       // load images/tile sprites
-        this.load.image('map', './assets/metro_back.png');
+        this.load.image('map', './assets/metro_back.png'); // background
         this.load.image('tower', './assets/tower.PNG'); // tower
-        this.load.image('enemy', './assets/worker.PNG'); // worker
-        this.load.image('explode', './assets/explode.png');
+        this.load.image('enemy', './assets/worker.PNG'); // worker 
+        // Note: sometimes will be referred to as enemy because of early game concept that got scrapped. Refactoring runs the risk of breaking code.
+        this.load.image('explode', './assets/explode.png'); // explosion/rebellion overlay
       }
       
     create(){
 
 
         // place map sprite
-        this.starfield = this.add.tileSprite(0, 0, 1280, 1281, 'map').setOrigin(0, 0);
-        this.workers = this.physics.add.group({ key: 'enemy', frame: 0, repeat: 90, setXY: { x: 100000, y: 100000,stepY: 40} });
+        this.starfield = this.add.tileSprite(0, 0, 1280, 1281, 'map').setOrigin(0, 0); // background set
+        this.workers = this.physics.add.group({ key: 'enemy', frame: 0, repeat: 90, setXY: { x: 100000, y: 100000,stepY: 40} }); // Set workers
 
 
         this.workerCost = 10; // initialize worker cost
         this.workerSell = 5; // initialize sell price of worker
 
+        // Money text
+        this.moneyText = this.add.text(650, 100, "Money: " + Math.floor(this.money), { fill: '#0f0' });
+        this.money = 0;
+
+        // Click tower to get money
         this.tower = this.add.sprite(this.sys.game.config.width / 2, this.sys.game.config.height/2, 'tower');
+        this.tower.setInteractive();
+        this.tower.on('pointerdown', () => {this.money++});
+
 
         this.prodRate = 0;
         this.towerMultiplier = 1; // Tower multiplier
@@ -42,6 +52,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
 
         this.workersOnBoard = 0; // workers on screen
 
+        // Buy and Sell Buttons, text
         this.buyButton = this.add.text(100, 100, 'Buy Worker for ' + this.workerCost,{ fill: '#0f0' });
         this.workerNumText = this.add.text(100, 150, '# Workers: ' + this.workersOnBoard, { fill: '#0f0' });
         this.sellButton = this.add.text(350, 100, 'Sacrifice Worker for ' + this.workerSell, {fill: '#ff001d' });
@@ -56,21 +67,10 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         this.dangerExplode = this.add.text(100, 1100, 'Explosion Danger Level: ' + this.explosionLvl, { fill: '#FFFFFF' });
         this.dangerRebel = this.add.text(500, 1100, 'Rebellion Danger Level: ' + this.rebelLvl, { fill: '#FFFFFF' });
 
+        // Defining keys
         keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
+        keyP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
 
-
-        //animate character (replace this once I do the sprites)
-
-        /*this.anims.create({
-          key: 'cat',
-          frames: this.anims.generateFrameNumbers('character', { start: 0, end: 1, first: 0}),
-          frameRate: 3,
-          repeat: -1
-        });
-        this.character.anims.play('cat');*/
-
-        this.money = 100;
-        this.moneyText = this.add.text(650, 100, "Money: " + Math.floor(this.money), { fill: '#0f0' });
 
         // add clock
         this.clock = this.time.delayedCall(60000, this.onClockEvent, null, this); 
@@ -83,7 +83,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         this.workersSacrificed = 0; // Keeping track of workers sacrificed for win condition
 
         this.explosionImg = this.add.image(0, 0, 'explode').setOrigin(0);
-        this.alpha = 0; // alpha gradually gets deeper as 
+        this.alpha = 0; // alpha gradually gets deeper as danger gets higher
         this.explosionImg.setAlpha(this.alpha);
         
 
@@ -92,7 +92,8 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
      update() {
 
       if (Phaser.Input.Keyboard.JustDown(keyP)) { // Pause menu
-        this.scene.start("pauseScene");
+        this.scene.launch("pauseScene");
+        this.scene.pause();
       }
         
         this.elapsed = parseInt(this.clock.getRemainingSeconds()); // how much time has passed.
@@ -264,5 +265,7 @@ class Play extends Phaser.Scene{ //creating js class 'menu' that extends phaser'
         
 
       }
+
+
       
 }

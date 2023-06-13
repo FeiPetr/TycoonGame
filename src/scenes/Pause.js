@@ -6,20 +6,21 @@ class Pause extends Phaser.Scene{ //creating js class 'menu' that extends phaser
 
     preload() {
         // load audio
-        this.load.image('pausescreen', './assets/metromenu.png'); // pause and credits
-        // replace all this but it's not high priority
+        this.load.image('pausescreen', './assets/pausescreen.png'); // pause
     }
 
     create(){
-        // this.add.text(20,20,"Rocket Patrol Menu");
          // menu text configuration
          this.pausescreen = new Image(this, game.config.width/2, game.config.width/2, 'pausescreen');
          this.add.image(0, 0, 'pausescreen').setOrigin(0);
+         keyP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
+
     }    
     
     update() {
-        if (Phaser.Input.Keyboard.JustDown(keyP)) {
-          this.scene.start("playScene");
+        if (Phaser.Input.Keyboard.JustDown(keyP)) { // Press P to unpause
+          this.scene.resume("playScene");
+          this.scene.stop();
         }
       }
 
