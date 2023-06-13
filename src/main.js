@@ -1,6 +1,5 @@
 /*
-Hours: 
-
+I use text objects, image manipulation, sprite interaction, a timer, and groups
 */
 
 
