@@ -13,12 +13,12 @@ class Pause extends Phaser.Scene{ //creating js class 'menu' that extends phaser
          // menu text configuration
          this.pausescreen = new Image(this, game.config.width/2, game.config.width/2, 'pausescreen');
          this.add.image(0, 0, 'pausescreen').setOrigin(0);
-         keyP = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.P);
+         keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
 
     }    
     
     update() {
-        if (Phaser.Input.Keyboard.JustDown(keyP)) { // Press P to unpause
+        if (Phaser.Input.Keyboard.JustDown(keyR)) { // Press P to unpause
           this.scene.resume("playScene");
           this.scene.stop();
         }
